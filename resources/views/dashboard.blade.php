@@ -41,11 +41,11 @@
                                 @endif
                             </div>
                             <div>
-                                @if ($barcode->serial_number)
-                                    <a href="{{ route('barcodes.processScan') }}" class="text-blue-600 text-sm">Lihat</a>
-                                @else
-                                    <a href="{{ route('barcodes.edit', $barcode->id) }}" class="text-blue-600 text-sm">Isi Data</a>
-                                @endif
+                                
+                                <a href="{{ route('barcodes.show', $barcode->id) }}" class="text-blue-600 text-sm">Lihat</a>
+                                
+                                    <!-- <a href="{{ route('barcodes.edit', $barcode->id) }}" class="text-blue-600 text-sm">Isi Data</a> -->
+                                
                             </div>
                         </li>
                     @endforeach

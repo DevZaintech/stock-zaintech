@@ -24,6 +24,9 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/{code}', [BarcodeController::class, 'displayByQrCode'])
+     ->where('code', '[A-Za-z0-9]+');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -37,6 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/barcodes/scan', [BarcodeController::class, 'processScan'])->name('barcodes.processScan');
     Route::get('/barcodes/{id}/edit', [BarcodeController::class, 'edit'])->name('barcodes.edit');
     Route::post('/barcodes/update', [BarcodeController::class, 'update'])->name('barcodes.update');
+    Route::get('/barcodes/show/{id}', [BarcodeController::class, 'show'])->name('barcodes.show');
+    Route::get('/barcode/print/{id}', [BarcodeController::class, 'print'])->name('barcode.print');
 });
 
 require __DIR__.'/auth.php';

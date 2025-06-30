@@ -55,35 +55,49 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script>
         function onScanSuccess(decodedText, decodedResult) {
-            // TAMPILKAN CODE SCAN DI LAYAR
-            document.getElementById('qr-result').innerText = "Code: " + decodedText;
+            let code = decodedText;
 
-            // AJAX CEK BARCODE
+            try {
+                // Kalau hasil scan URL, ambil path terakhir
+                let url = new URL(decodedText);
+                code = url.pathname.replace('/', '');
+            } catch (e) {
+                // Kalau bukan URL valid ➜ biarkan apa adanya
+                code = decodedText;
+            }
+
+            console.log('Scanned value:', decodedText);
+            console.log('Parsed code:', code);
+
+            // TAMPILKAN CODE DI LAYAR
+            document.getElementById('qr-result').innerText = "Code: " + code;
+
+            // AJAX KE SERVER, KIRIM CODE SAJA!
             fetch("{{ route('barcodes.processScan') }}", {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({code: decodedText})
+                body: JSON.stringify({ code: code })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'error') {
                     alert(data.message);
                 } else if (data.status === 'empty') {
-                    // KOSONG ➜ TAMPILKAN FORM INPUT
+                    // BELUM ADA DATA ➜ TAMPILKAN FORM INPUT
                     document.getElementById('form-area').style.display = 'block';
                     document.getElementById('show-data').style.display = 'none';
-                    document.getElementById('code').value = decodedText; // HIDDEN INPUT KEISI
+                    document.getElementById('code').value = code; // FORM INPUT HIDDEN JUGA KODE
                 } else if (data.status === 'filled') {
-                    // SUDAH ISI ➜ TAMPIL DETAIL
+                    // SUDAH ADA DATA ➜ TAMPILKAN DETAIL
                     document.getElementById('form-area').style.display = 'none';
                     document.getElementById('show-data').style.display = 'block';
-                    document.getElementById('show_code').innerText = decodedText;
+                    document.getElementById('show_code').innerText = code;
                     document.getElementById('serial_number').innerText = data.barcode.serial_number;
-                    document.getElementById('machine_name').innerText = data.barcode.machine_name;
-                    document.getElementById('sold_at').innerText = data.barcode.sold_at;
+                    document.getElementById('machine_name').innerText = data.barcode.nama_mesin;
+                    document.getElementById('sold_at').innerText = data.barcode.tanggal_terjual;
                 }
             });
         }

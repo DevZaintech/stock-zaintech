@@ -31,13 +31,18 @@ class BarcodeController extends Controller
         $unique = substr(uniqid(), -5);
         $code = "ST{$dateCode}{$unique}";
 
+        // Simpan ke DB
         Barcode::create(['code' => $code]);
+
+        // BUAT URL
+        $url = url('/' . $code);
+        // Kalau belum di hosting pakai APP_URL di .env, maka url() auto ikut domain kamu
 
         $result = Builder::create()
             ->writer(new PngWriter())
-            ->data($code)
+            ->data($url) // ✅ GANTI INI!
             ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(ErrorCorrectionLevel::High) // ✅ enum yang bener
+            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
             ->size(300)
             ->margin(10)
             ->logoPath(public_path('logo/logo-z.png'))
@@ -45,13 +50,9 @@ class BarcodeController extends Controller
             ->logoResizeToHeight(50)
             ->build();
 
+        // Simpan file PNG
         $qrPath = storage_path('app/public/qr_codes/' . $code . '.png');
         $result->saveToFile($qrPath);
-
-        return view('content.barcode.qr', [
-            'code' => $code,
-            'qr_url' => asset('storage/qr_codes/' . $code . '.png'),
-        ]);
     }
 
     // Form scan barcode
@@ -93,13 +94,33 @@ class BarcodeController extends Controller
     public function update(Request $request)
     {
         $barcode = Barcode::where('code', $request->code)->firstOrFail();
+        // dd($request->machine_name);
 
         $barcode->serial_number = $request->serial_number;
-        $barcode->machine_name = $request->machine_name;
-        $barcode->sold_at = $request->sold_at;
+        $barcode->nama_mesin = $request->machine_name;
+        $barcode->tanggal_terjual = $request->sold_at;
         $barcode->id_user = auth()->id();
         $barcode->save();
 
-        return redirect()->route('barcodes.scanForm')->with('success', 'Data berhasil disimpan!');
+        return redirect()->route('barcodes.scan')->with('success', 'Data berhasil disimpan!');
+    }
+
+    public function show($id)
+    {
+        $barcode = Barcode::findOrFail($id);
+        return view('content.barcode.show', compact('barcode'));
+    }
+
+    public function print($id)
+    {
+        $barcode = Barcode::findOrFail($id);
+        return view('content.barcode.print', compact('barcode'));
+    }
+
+    public function displayByQrCode($code)
+    {
+        $barcode = Barcode::where('code', $code)->firstOrFail();
+
+        return view('content.barcode.qrshow', compact('barcode'));
     }
 }
