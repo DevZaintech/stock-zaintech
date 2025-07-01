@@ -24,8 +24,6 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/{code}', [BarcodeController::class, 'displayByQrCode'])
-     ->where('code', '[A-Za-z0-9]+');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -45,3 +43,6 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/{code}', [BarcodeController::class, 'displayByQrCode'])
+     ->where('code', '[A-Za-z0-9]+');
