@@ -53,6 +53,9 @@ class BarcodeController extends Controller
         // Simpan file PNG
         $qrPath = storage_path('app/public/qr_codes/' . $code . '.png');
         $result->saveToFile($qrPath);
+        $barcode = Barcode::where('code' , $code)->first();
+        return view('content.barcode.show', compact('barcode'));
+
     }
 
     // Form scan barcode
